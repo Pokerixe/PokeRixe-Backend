@@ -6,7 +6,7 @@ public class Attack extends Action{
 
     private String apiUrl;
 
-    // TODO : private Pokemon attacker;
+    private Pokemon attacker;
 
-    // TODO : private Pokemon target;
+    private Pokemon target;
 }
