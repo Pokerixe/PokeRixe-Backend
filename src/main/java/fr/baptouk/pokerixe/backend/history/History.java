@@ -10,6 +10,7 @@ import java.util.UUID;
 @Document(collection = "history")
 public class History {
 
+    @Id
     private UUID id = UUID.randomUUID();
 
     private List<Game> games;
