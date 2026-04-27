@@ -1,7 +1,7 @@
 package fr.baptouk.pokerixe.backend.user;
 
+import fr.baptouk.pokerixe.backend.history.History;
 import fr.baptouk.pokerixe.backend.team.Team;
-import fr.baptouk.pokerixe.backend.team.pokemon.Pokemon;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,7 +15,7 @@ public class User {
 
     private String mail, password, pseudo;
 
-    // TODO : Historique
-    private Team team;
+    private History history;
 
+    private Team team;
 }
