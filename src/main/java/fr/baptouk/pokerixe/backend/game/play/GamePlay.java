@@ -21,7 +21,7 @@ public class GamePlay extends Game {
     @Getter
     private GameStatus status = GameStatus.WAITING;
 
-    private Map<String, UUID> playerTokens = new HashMap<>(2);
+    private final Map<String, UUID> playerTokens = new HashMap<>(2);
 
     public GamePlay(final String description) {
         super(description);
