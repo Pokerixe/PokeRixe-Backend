@@ -2,8 +2,10 @@ package fr.baptouk.pokerixe.backend.game.turn;
 
 import fr.baptouk.pokerixe.backend.game.turn.action.Action;
 
+import java.util.List;
+
 public class Turn {
 
-    public Action action;
+    public List<Action> action;
 
 }
