@@ -1,21 +1,19 @@
-package fr.baptouk.pokerixe.backend.user;
+package fr.baptouk.pokerixe.backend.history;
 
-import fr.baptouk.pokerixe.backend.history.History;
+import fr.baptouk.pokerixe.backend.game.Game;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import java.util.UUID;
 
 @Document(collection = "users")
-public class User {
+
+public class History {
 
     @Id
     private UUID id;
 
-    private String mail, password, pseudo;
-
-    private History history;
-
-
+    private List<Game> games;
 
 }
