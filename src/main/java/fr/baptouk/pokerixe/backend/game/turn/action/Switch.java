@@ -6,6 +6,6 @@ public class Switch extends Action{
 
     private GamePlayer player;
 
-    // TODO : private Pokemon nextPokemon;
+    private Pokemon nextPokemon;
 
 }
