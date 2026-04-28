@@ -39,7 +39,7 @@ public final class UserService {
     public User editProfile(final User user, String pseudo, String mail){
         user.setPseudo(pseudo.length() > 32 ? pseudo.substring(0, 32) : pseudo);
         user.setMail(mail);
-        return userRepository.save(user);
+        return userRepository.save(user); // TODO : ca duplique avec les mauvaises datas
     }
 
 }

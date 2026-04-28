@@ -1,8 +1,5 @@
 package fr.baptouk.pokerixe.backend.user;
 
-import fr.baptouk.pokerixe.backend.shared.ApiResponse;
-import fr.baptouk.pokerixe.backend.user.dto.UserResponseDTO;
-import fr.baptouk.pokerixe.backend.user.dto.UserResponseUpdateDTO;
 import fr.baptouk.pokerixe.backend.user.provider.UserNotFoundException;
 import fr.baptouk.pokerixe.backend.user.provider.UserService;
 import fr.baptouk.pokerixe.backend.user.team.Team;
@@ -27,9 +24,9 @@ public final class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<User> getMe(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(new ApiResponse<>(new UserResponseDTO(userService.getByMail(userDetails.getUsername()))));
+            return ResponseEntity.ok( userService.getByMail(userDetails.getUsername()));
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
@@ -56,16 +53,14 @@ public final class UserController {
     }
 
     @PatchMapping("profile")
-    public @ResponseBody ResponseEntity<User> editProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final UserResponseUpdateDTO newUser) {
+    public @ResponseBody ResponseEntity<User> editProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody final String pseudo, @RequestBody final String mail) {
+
+        System.out.println(pseudo);
+        System.out.println(mail);
+
         final User user = userService.getByMail(userDetails.getUsername())  ; // Le username c'est le Mail, car c'est l'identifiant du compte pour le jwt token
 
-
-
-        System.out.println("New user :::");
-        System.out.println(newUser.getPseudo());
-        System.out.println(newUser.getMail());
-
-        return ResponseEntity.ok(userService.editProfile(user, newUser.getPseudo(), newUser.getMail()));
+        return ResponseEntity.ok(userService.editProfile(user, pseudo, mail));
     }
 
 }
