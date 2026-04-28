@@ -37,7 +37,7 @@ public final class GameController {
         }
     }
 
-    @GetMapping("available")
+    @GetMapping("/available")
     public @ResponseBody ResponseEntity<Iterable<Game>> getAvailableGames() {
         return ResponseEntity.ok(gameService.getAvailableGames());
     }
