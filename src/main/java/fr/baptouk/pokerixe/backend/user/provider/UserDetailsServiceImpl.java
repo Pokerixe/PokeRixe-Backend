@@ -1,8 +1,6 @@
 package fr.baptouk.pokerixe.backend.user.provider;
 
 import fr.baptouk.pokerixe.backend.user.User;
-import fr.baptouk.pokerixe.backend.user.UserRepository; // Assurez-vous que cet import est présent
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,10 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String mail) throws UsernameNotFoundException {
