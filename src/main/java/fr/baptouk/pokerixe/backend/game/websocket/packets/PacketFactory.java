@@ -1,6 +1,8 @@
 package fr.baptouk.pokerixe.backend.game.websocket.packets;
 
 import fr.baptouk.pokerixe.backend.game.provider.GameService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -11,6 +13,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 public class PacketFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(PacketFactory.class);
 
     private static PacketSerializer packetSerializer;
 
@@ -28,6 +32,7 @@ public class PacketFactory {
     public static void sendPacket(final WebSocketSession session,
                                   final PacketData packet) throws Exception {
         session.sendMessage(packetSerializer.serializePacket(packet));
+        logger.debug("Sent packet {} to session {}", packet.getClass().getSimpleName(), session.getId());
     }
 
     public static void broadcastPacket(final PacketData packet) throws Exception {
@@ -42,6 +47,7 @@ public class PacketFactory {
                     .filter(game -> game.getId().equals(gameId))
                     .anyMatch(gamePlay -> gamePlay.getPlayerSessions().containsValue(session.getId()))){
                 sendPacket(session, packet);
+                logger.debug("Broadcasted packet {} to session {} for game {}", packet.getClass().getSimpleName(), session.getId(), gameId);
             }
         }
     }

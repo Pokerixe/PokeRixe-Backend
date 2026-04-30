@@ -23,7 +23,7 @@ import java.util.UUID;
 public class GamePlay extends Game {
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private final Logger logger = LoggerFactory.getLogger(GamePlay.class);
+    private transient final Logger logger = LoggerFactory.getLogger(GamePlay.class);
 
     @Setter
     @Getter

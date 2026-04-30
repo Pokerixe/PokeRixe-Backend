@@ -18,7 +18,7 @@ public record JoinPacket(UUID userId, String username) implements PacketData {
     public void handleRecieve(WebSocketSession session, UUID user, GamePlay game) {
         if (game.getStatus() == GameStatus.WAITING) {
             try {
-                PacketFactory.broadcastPacket(this);
+                PacketFactory.broadcastPacket(game.getId(), this);
             } catch (Exception e) {
                 logger.error("Failed to broadcast JoinPacket", e);
             }

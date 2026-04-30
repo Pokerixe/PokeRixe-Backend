@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public class UserResponseDTO {
     private final String id;
+    private final String pseudo;
     private final String mail;
     private final int role;
     private final Team team;
