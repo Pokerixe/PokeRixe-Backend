@@ -1,7 +1,23 @@
 spring:
   application:
     name: pokerixe-backend
+  mongodb:
+    uri: ${MONGO_URI:mongodb://localhost:27017/pokerixe}
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:ma_cle_secrete_dev_de_32_chars_min}
   expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: pokerixe-backend

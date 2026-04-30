@@ -1,6 +1,7 @@
 package fr.baptouk.pokerixe.backend.game.provider;
 
 import fr.baptouk.pokerixe.backend.game.Game;
+import fr.baptouk.pokerixe.backend.game.play.GameCreationResponse;
 import fr.baptouk.pokerixe.backend.game.play.GamePlay;
 import fr.baptouk.pokerixe.backend.game.play.GameStatus;
 import fr.baptouk.pokerixe.backend.game.provider.exceptions.GameNotFoundException;
@@ -42,22 +43,24 @@ public final class GameService {
      * @param user {@link User} qui crée la partie
      * @return Un token websocket qui appartient à la partie
      */
-    public String createGame(final User user, final String description) throws UserAlreadyInGameException {
+    public GameCreationResponse createGame(final User user, final String description) throws UserAlreadyInGameException {
         if (this.games.stream()
                 .anyMatch(gamePlay -> gamePlay.getPlayers().stream()
                         .anyMatch(player -> player.getId().equals(user.getId())))) {
             throw new UserAlreadyInGameException();
         }
 
-        final GamePlay game = new GamePlay(description);
+        final int pokemonCount = user.getTeam().getPokemons().size();
+
+        final GamePlay game = new GamePlay(description, pokemonCount);
 
         game.addPlayer(user);
 
         this.games.add(game);
-        return game.getUserToken(user.getId());
+        return new GameCreationResponse(game.getId(), game.getUserToken(user.getId()));
     }
 
-    public String joinGame(final User user, final UUID gameId) throws GameNotFoundException {
+    public String joinGame(final User user, final UUID gameId, final int selectSlotPokemon) throws GameNotFoundException {
         final GamePlay gamePlay = this.games.stream()
 
                 // Is game available ?
@@ -68,7 +71,7 @@ public final class GameService {
                 .findFirst()
                 .orElseThrow(GameNotFoundException::new);
 
-        gamePlay.addPlayer(user);
+        gamePlay.addPlayer(user, user.getTeam().getPokemons().get(selectSlotPokemon));
 
 
         /*
@@ -77,11 +80,11 @@ public final class GameService {
         return gamePlay.getUserToken(user.getId());
     }
 
-    public List<Game> getAvailableGames(){
+    public List<GamePlay> getAvailableGames(){
         return this.games.stream()
                 .filter(gamePlay -> gamePlay.getStatus() == GameStatus.WAITING
                         && gamePlay.getPlayers().size() < 2)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     public Optional<GamePlay> getGameByToken(final String token){
