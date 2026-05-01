@@ -2,7 +2,6 @@ package fr.baptouk.pokerixe.backend.game.websocket.packets.game;
 
 import fr.baptouk.pokerixe.backend.game.play.GamePlay;
 import fr.baptouk.pokerixe.backend.game.play.GameStatus;
-import fr.baptouk.pokerixe.backend.game.websocket.packets.PacketData;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.PacketFactory;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.ReceivablePacket;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.SendablePacket;

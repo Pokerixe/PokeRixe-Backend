@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.baptouk.pokerixe.backend.game.play.GamePlay;
 import fr.baptouk.pokerixe.backend.game.provider.GameService;
 import fr.baptouk.pokerixe.backend.game.websocket.UserNotAuthorizedException;
-import fr.baptouk.pokerixe.backend.game.websocket.packets.game.GameStartPacket;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.game.JoinPacket;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
