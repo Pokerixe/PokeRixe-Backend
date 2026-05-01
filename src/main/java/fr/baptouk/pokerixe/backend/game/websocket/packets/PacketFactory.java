@@ -21,11 +21,11 @@ public class PacketFactory {
 
 
     public static void sendPacket(final WebSocketSession session,
-                                  final PacketData packet) throws Exception {
+                                  final SendablePacket packet) throws Exception {
         session.sendMessage(packetSerializer.serializePacket(packet));
     }
 
-    public static void broadcastPacket(final PacketData packet) throws Exception {
+    public static void broadcastPacket(final SendablePacket packet) throws Exception {
         for (final WebSocketSession session : SESSIONS) {
             sendPacket(session, packet);
         }

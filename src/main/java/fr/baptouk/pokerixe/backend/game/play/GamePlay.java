@@ -69,7 +69,9 @@ public class GamePlay extends Game {
     }
 
     public void init() {
+
         this.lifecycle.fetchPokemons();
+
     }
 
     public void start() {
