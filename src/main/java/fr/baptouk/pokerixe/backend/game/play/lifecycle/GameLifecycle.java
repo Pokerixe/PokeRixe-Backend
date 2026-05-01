@@ -6,9 +6,13 @@ import fr.baptouk.pokerixe.backend.game.websocket.packets.game.lifecycle.GameSta
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public final class GameLifecycle {
@@ -21,21 +25,22 @@ public final class GameLifecycle {
     //  playerActions.clear() pour vider la map en attendant la prochaine
 
 
-    public void fetchPokemons() {
-        // récupere tout les infos de pokemon + les attaques
+    public Mono<Void> fetchPokemons(WebClient pokeApiClient) {
+        List<Mono<Void>> initTasks = gamePlay.getPlayers().stream()
+                .map(player -> player.init(pokeApiClient))
+                .toList();
 
-        logger.info("Fetching team data's ...");
-
-        this.startGame();
-
+        return Mono.when(initTasks)
+                .doOnSuccess(v -> this.startGame())
+                .doOnError(e -> logger.error("Erreur pendant le fetch", e));
     }
 
     public void startGame() {
-        // envoi le packet de début de partie
 
-        new GameStartPacket().send();
+        new GameStartPacket().send(); // met les joueurs en mode Jeux
 
-        // Met en mode jeu les joueurs
+
+        // Paquets pour leurs faire charger les pokemons
 
     }
 
