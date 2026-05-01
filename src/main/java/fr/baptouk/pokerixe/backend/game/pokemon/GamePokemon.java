@@ -14,6 +14,7 @@ public class GamePokemon {
     private Integer pokemonId;
 
     private String name;
+    private PokemonStats stats;
 
     private List<PokemonType> type = Collections.emptyList();
 
