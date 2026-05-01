@@ -9,18 +9,21 @@ import fr.baptouk.pokerixe.backend.game.provider.exceptions.UserAlreadyInGameExc
 import fr.baptouk.pokerixe.backend.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public final class GameService {
 
     @Autowired
     private GameRepository gameRepository;
+
+    @Autowired
+    private WebClient pokeApiClient;
 
     /**
      * Liste des parties en cours, qu'elles soient vides ou non.
@@ -53,6 +56,8 @@ public final class GameService {
         final int pokemonCount = user.getTeam().getPokemons().size();
 
         final GamePlay game = new GamePlay(description, pokemonCount);
+        game.setGameService(this);
+        game.setPokeApiClient(pokeApiClient);
 
         game.addPlayer(user);
 
@@ -103,5 +108,9 @@ public final class GameService {
                 .filter(game -> game.getPlayers().stream()
                         .anyMatch(player -> player.getId().equals(userId)))
                 .toList();
+    }
+
+    public void saveGame(Game game){
+        gameRepository.save(game);
     }
 }

@@ -3,12 +3,15 @@ package fr.baptouk.pokerixe.backend.game.play;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import fr.baptouk.pokerixe.backend.game.Game;
 import fr.baptouk.pokerixe.backend.game.play.lifecycle.GameLifecycle;
+import fr.baptouk.pokerixe.backend.game.provider.GameService;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.game.lifecycle.GameStartPacket;
 import fr.baptouk.pokerixe.backend.user.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.annotation.Transient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -22,7 +25,7 @@ import java.util.UUID;
 public class GamePlay extends Game {
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private transient final Logger logger = LoggerFactory.getLogger(GamePlay.class);
+    @Transient private transient final Logger logger = LoggerFactory.getLogger(GamePlay.class);
 
     @Setter
     @Getter
@@ -30,10 +33,12 @@ public class GamePlay extends Game {
 
     private final int pokemonCount;
 
-    private transient final Map<String, UUID> playerTokens = new HashMap<>(2);
-    private transient final Map<UUID, String> playerSessions = new HashMap<>(2);
+    @Transient private transient final Map<String, UUID> playerTokens = new HashMap<>(2);
+    @Transient @Getter private transient final Map<UUID, String> playerSessions = new HashMap<>(2);
 
-    private transient final GameLifecycle lifecycle = new GameLifecycle(this);
+    @Transient private transient final GameLifecycle lifecycle = new GameLifecycle(this);
+    @Transient @Setter private transient GameService gameService;
+    @Transient @Setter private transient WebClient pokeApiClient;
 
     public GamePlay(final String description, final int pokemonCount) {
         super(description);
@@ -74,10 +79,11 @@ public class GamePlay extends Game {
                 .orElse(null);
     }
 
+
     public void init() {
-
-        this.lifecycle.fetchPokemons();
-
+        this.lifecycle.fetchPokemons(pokeApiClient)
+                .doOnSuccess(v -> gameService.saveGame(this))
+                .subscribe();
     }
 
     public void start() {
@@ -93,7 +99,4 @@ public class GamePlay extends Game {
         this.playerSessions.put(user, sessionId);
     }
 
-    public Map<UUID, String> getPlayerSessions() {
-        return playerSessions;
-    }
 }

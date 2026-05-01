@@ -1,10 +1,12 @@
 package fr.baptouk.pokerixe.backend.game;
 
 import fr.baptouk.pokerixe.backend.game.analysis.GameAnalysis;
+import fr.baptouk.pokerixe.backend.game.attack.GameAttack;
 import fr.baptouk.pokerixe.backend.game.player.GamePlayer;
+import fr.baptouk.pokerixe.backend.game.pokemon.GamePokemon;
+import fr.baptouk.pokerixe.backend.game.team.GameTeam;
 import fr.baptouk.pokerixe.backend.game.turn.Turn;
 import fr.baptouk.pokerixe.backend.user.User;
-import fr.baptouk.pokerixe.backend.user.team.pokemon.Pokemon;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -39,9 +41,26 @@ public class Game {
 
 
     public Game addPlayer(final User user, int selectedPokemon) {
+        GameTeam gameTeam = new GameTeam();
+        gameTeam.setPokemons(user.getTeam().getPokemons().stream()
+                .map(pokemon -> {
+                    GamePokemon gamePokemon = new GamePokemon();
+                    gamePokemon.setPokemonId(pokemon.getId());
+                    gamePokemon.setAttacks(pokemon.getAttacks().stream()
+                            .map(attack -> {
+                                GameAttack gameAttack = new GameAttack();
+                                gameAttack.setApiUrl(attack.getApiUrl());
+                                return gameAttack;
+                            })
+                            .toList());
+                    return gamePokemon;
+                })
+                .toList());
+
         this.players.add(GamePlayer.builder()
                 .id(user.getId())
                 .pseudo(user.getPseudo())
+                .team(gameTeam)
                 .indexSelectedPokemon(selectedPokemon)
                 .build());
 
