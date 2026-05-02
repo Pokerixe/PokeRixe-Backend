@@ -4,6 +4,7 @@ import fr.baptouk.pokerixe.backend.game.Game;
 import fr.baptouk.pokerixe.backend.game.play.GameCreationResponse;
 import fr.baptouk.pokerixe.backend.game.play.GamePlay;
 import fr.baptouk.pokerixe.backend.game.play.GameStatus;
+import fr.baptouk.pokerixe.backend.game.mapper.GameMapper;
 import fr.baptouk.pokerixe.backend.game.provider.exceptions.GameNotFoundException;
 import fr.baptouk.pokerixe.backend.game.provider.exceptions.UserAlreadyInGameException;
 import fr.baptouk.pokerixe.backend.user.User;
@@ -21,6 +22,9 @@ public final class GameService {
 
     @Autowired
     private GameRepository gameRepository;
+
+    @Autowired
+    private GameMapper gameMapper;
 
     @Autowired
     private WebClient pokeApiClient;
@@ -59,7 +63,7 @@ public final class GameService {
         game.setGameService(this);
         game.setPokeApiClient(pokeApiClient);
 
-        game.addPlayer(user, pokemonTeamSlot);
+        game.addPlayer(gameMapper.toGamePlayer(user, pokemonTeamSlot));
 
         this.games.add(game);
         return new GameCreationResponse(game.getId(), game.getUserToken(user.getId()));
@@ -76,7 +80,7 @@ public final class GameService {
                 .findFirst()
                 .orElseThrow(GameNotFoundException::new);
 
-        gamePlay.addPlayer(user, selectSlotPokemon);
+        gamePlay.addPlayer(gameMapper.toGamePlayer(user, selectSlotPokemon));
 
 
         /*

@@ -3,15 +3,21 @@ package fr.baptouk.pokerixe.backend.game.play;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import fr.baptouk.pokerixe.backend.game.Game;
 import fr.baptouk.pokerixe.backend.game.play.lifecycle.GameLifecycle;
+import fr.baptouk.pokerixe.backend.game.player.GamePlayer;
 import fr.baptouk.pokerixe.backend.game.provider.GameService;
+import fr.baptouk.pokerixe.backend.game.websocket.dto.CurrentPlayerStateDto;
+import fr.baptouk.pokerixe.backend.game.websocket.dto.FullStateGameDto;
+import fr.baptouk.pokerixe.backend.game.websocket.dto.OpponentPlayerStateDto;
+import fr.baptouk.pokerixe.backend.game.websocket.packets.PacketFactory;
+import fr.baptouk.pokerixe.backend.game.websocket.packets.game.FullStatePacket;
 import fr.baptouk.pokerixe.backend.game.websocket.packets.game.lifecycle.GameStartPacket;
-import fr.baptouk.pokerixe.backend.user.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Transient;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -36,7 +42,7 @@ public class GamePlay extends Game {
     @Transient private transient final Map<String, UUID> playerTokens = new HashMap<>(2);
     @Transient @Getter private transient final Map<UUID, String> playerSessions = new HashMap<>(2);
 
-    @Transient private transient final GameLifecycle lifecycle = new GameLifecycle(this);
+    @Transient public transient final GameLifecycle lifecycle = new GameLifecycle(this);
     @Transient @Setter private transient GameService gameService;
     @Transient @Setter private transient WebClient pokeApiClient;
 
@@ -46,19 +52,10 @@ public class GamePlay extends Game {
     }
 
     @Override
-    public Game addPlayer(User user) {
+    public Game addPlayer(final GamePlayer player) {
         final String token = this.generateToken();
-        this.playerTokens.put(token, user.getId());
-
-        return super.addPlayer(user);
-    }
-
-
-    public Game addPlayer(User user, int selectedPokemon) {
-        final String token = this.generateToken();
-        this.playerTokens.put(token, user.getId());
-
-        return super.addPlayer(user, selectedPokemon);
+        this.playerTokens.put(token, player.getId());
+        return super.addPlayer(player);
     }
 
     private synchronized String generateToken() {
@@ -89,10 +86,59 @@ public class GamePlay extends Game {
     public void start() {
         this.status = GameStatus.PLAYING;
 
+
         new GameStartPacket().send();
 
+        sendFullState();
 
-        this.lifecycle.startGame();
+    }
+
+    public void sendFullState() {
+        GamePlayer p1 = null;
+        GamePlayer p2 = null;
+        String p1SessionId = null;
+        String p2SessionId = null;
+
+        for (Map.Entry<UUID, String> entry : playerSessions.entrySet()) {
+            GamePlayer player = this.getPlayers().stream()
+                    .filter(p -> p.getId().equals(entry.getKey()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (p1 == null) {
+                p1 = player;
+                p1SessionId = entry.getValue();
+            } else {
+                p2 = player;
+                p2SessionId = entry.getValue();
+            }
+        }
+
+        WebSocketSession p1Session = PacketFactory.getSession(p1SessionId);
+        WebSocketSession p2Session = PacketFactory.getSession(p2SessionId);
+
+        if (p1Session == null || p2Session == null) {
+            logger.warn("Session introuvable pour l'envoi du FullState");
+            return;
+        }
+
+        new FullStatePacket(
+                FullStateGameDto.from(
+                        this,
+                        CurrentPlayerStateDto.from(p1),
+                        OpponentPlayerStateDto.from(p2)
+                        )
+                ).send(p1Session);
+
+        new FullStatePacket(
+                FullStateGameDto.from(
+                        this,
+                        CurrentPlayerStateDto.from(p2),
+                        OpponentPlayerStateDto.from(p1)
+                )
+        ).send(p2Session);
+
+
     }
 
     public void applySessionId(UUID user, String sessionId) {
