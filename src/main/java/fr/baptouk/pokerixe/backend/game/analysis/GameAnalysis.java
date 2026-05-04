@@ -5,8 +5,6 @@ import java.util.UUID;
 
 public final class GameAnalysis {
 
-    private UUID id = UUID.randomUUID();
-
     private int score;
 
     private Map<Integer,Integer> scoreByTurn;

@@ -135,6 +135,9 @@ public class GamePlay extends Game {
         if (gameService != null) {
             gameService.saveGame(this);
             gameService.removeGame(this.getId());
+
+            // Starting Game Analysis
+            gameService.startGameAnalysis(this);
         }
     }
 
