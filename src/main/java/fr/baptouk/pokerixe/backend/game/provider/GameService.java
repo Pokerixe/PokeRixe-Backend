@@ -1,6 +1,7 @@
 package fr.baptouk.pokerixe.backend.game.provider;
 
 import fr.baptouk.pokerixe.backend.game.Game;
+import fr.baptouk.pokerixe.backend.game.analysis.GameAnalysisProvider;
 import fr.baptouk.pokerixe.backend.game.play.GameCreationResponse;
 import fr.baptouk.pokerixe.backend.game.play.GamePlay;
 import fr.baptouk.pokerixe.backend.game.play.GameStatus;
@@ -8,10 +9,13 @@ import fr.baptouk.pokerixe.backend.game.mapper.GameMapper;
 import fr.baptouk.pokerixe.backend.game.provider.exceptions.GameNotFoundException;
 import fr.baptouk.pokerixe.backend.game.provider.exceptions.UserAlreadyInGameException;
 import fr.baptouk.pokerixe.backend.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +23,8 @@ import java.util.UUID;
 
 @Component
 public final class GameService {
+
+    private final Logger logger = LoggerFactory.getLogger(GameService.class);
 
     @Autowired
     private GameRepository gameRepository;
@@ -28,6 +34,9 @@ public final class GameService {
 
     @Autowired
     private WebClient pokeApiClient;
+
+    @Autowired
+    private GameAnalysisProvider gameAnalysisProvider;
 
     /**
      * Liste des parties en cours, qu'elles soient vides ou non.
@@ -88,18 +97,18 @@ public final class GameService {
         return gamePlay.getUserToken(user.getId());
     }
 
-    public List<GamePlay> getAvailableGames(){
+    public List<GamePlay> getAvailableGames() {
         return this.games.stream()
                 .filter(gamePlay -> gamePlay.getStatus() == GameStatus.WAITING
                         && gamePlay.getPlayers().size() < 2)
                 .toList();
     }
 
-    public List<GamePlay> getGamePlays(){
+    public List<GamePlay> getGamePlays() {
         return this.games;
     }
 
-    public Optional<GamePlay> getGameByToken(final String token){
+    public Optional<GamePlay> getGameByToken(final String token) {
         return this.games.stream()
                 .filter(gamePlay -> gamePlay.getUserByToken(token) != null)
                 .findFirst();
@@ -113,11 +122,24 @@ public final class GameService {
                 .toList();
     }
 
-    public void saveGame(Game game){
+    public void saveGame(Game game) {
         gameRepository.save(game);
     }
 
     public void removeGame(UUID gameId) {
         this.games.removeIf(g -> g.getId().equals(gameId));
+    }
+
+    public void startGameAnalysis(Game game) {
+        this.gameAnalysisProvider.startAnalysis(game)
+                .thenAccept(analysis -> {
+                    game.setAnalysis(analysis);
+                    this.gameRepository.save(game);
+                })
+                .thenAccept(v -> logger.info("Analyse de la partie {} terminée", game.getId()))
+                .exceptionally(ex -> {
+                    logger.error("Erreur lors de l'analyse de la partie {}", game.getId(), ex);
+                    return null;
+                });
     }
 }
