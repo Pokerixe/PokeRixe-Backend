@@ -43,7 +43,7 @@ public class PacketFactory {
 
     public static void broadcastPacket(final UUID gameId, final SendablePacket packet) throws Exception {
         for (final WebSocketSession session : SESSIONS) {
-            if (gameService.getAvailableGames().stream()
+            if (gameService.getPlayingGames().stream()
                     .filter(game -> game.getId().equals(gameId))
                     .anyMatch(gamePlay -> gamePlay.getPlayerSessions().containsValue(session.getId()))){
                 sendPacket(session, packet);
